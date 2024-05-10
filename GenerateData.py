@@ -11,35 +11,7 @@ class Data_Single(object):
         self.L=torch.tensor(L).to(device)
         self.r1=box
         self.device=device
-'''
-    def sphere_bound(self,num):
-        """
-        L : the center of sphere
-        output: boundary point and related f_direction 
-        """
-        L=self.L
-        psi=2*pi*torch.rand(num,device=self.device).view(-1,1)   #[0,2pi]
-        x=L[0]+self.r0*torch.cos(psi)
-        y=L[1]+self.r0*torch.sin(psi)   
-        X=torch.cat((x,y),dim=1) 
-           
-        f_direction=(X-self.L)/self.r0
-        
-        return psi.to(self.device),f_direction.to(self.device)
-   
 
-    def sphere_inner(self,num):
-
-        L=self.L
-        r=torch.rand(num,device=self.device).view(-1,1)*self.r0  #(0,1)
-        theta=2*torch.rand(len(r),device=self.device).view(-1,1) #[0,2pi]
-        x=L[0]+r*torch.cos(theta*pi)
-        y=L[1]+r*torch.sin(theta*pi)
-        X=torch.cat((x,y),dim=1) 
-       
-        return X
-
-'''
     def sampleDomain_hole(self,num):
         """
         num: the number of training points
