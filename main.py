@@ -80,21 +80,23 @@ def main(args):
     r1=args.box
   
     ### test data,label_out,label_inner
-    test_out,test_inner=test_data_net(args,device)   
-    tx_in,ty_in,test_inner=data_transform(test_inner.T,device)
+    test_out=test_data_net(args,device)   
+    #tx_in,ty_in,test_inner=data_transform(test_inner.T,device)
     tx_out,ty_out,test_out=data_transform(test_out.T,device) 
     label_out=u(test_out,'out',args.a)
-    label_inner=u(test_inner,'inner',args.a)
+    #label_inner=u(test_inner,'inner',args.a)
     ### train data
     data=Data_Single(r0=r0,L=args.L,box=args.box,device=device)
     
-    out,inner=data.sampleDomain_hole(args.train_domian)
+    out=data.sampleDomain_hole(args.train_domian)
     out=out.T
+    '''
     inner=inner.T
     inner_b_theta,f_direction=data.sphere_bound(args.train_inner_b)
     inner_b_theta=inner_b_theta.clone().detach().requires_grad_(True)  
     x_in_b,y_in_b,input_in_b=data_transform_theta(inner_b_theta,center,r0,device) 
-    x_in,y_in,input_in=data_transform(inner,device)  
+    x_in,y_in,input_in=data_transform(inner,device) 
+    '''
     x_out,y_out,input_out=data_transform(out,device) 
     
     out_b_theta=data.sampleFromBoundary(args.train_out_b) 
@@ -102,14 +104,14 @@ def main(args):
     x_outb,y_outb,out_b=data_transform_theta(out_b_theta,center,r1,device)
 
     out_b_label=u(out_b,'out',args.a)  
-    z=torch.ones(input_in_b.size()[0]).view(-1,1).to(device)
+    #z=torch.ones(input_in_b.size()[0]).view(-1,1).to(device)
 
     print('out:',input_out.size())
-    print('inner_b',input_in_b.size())
+    #print('inner_b',input_in_b.size())
     print('out_b',out_b.size())
-    print('input_in',input_in.size())
+    #print('input_in',input_in.size())
     
-    net_inner=FNN(m=args.inner_unit).to(device) 
+    #net_inner=FNN(m=args.inner_unit).to(device) 
     net_out=FNN(m=args.out_unit).to(device)     
     optimizer=optim.Adam(itertools.chain(net_inner.parameters(),net_out.parameters()),lr=args.lr)
     result=[]
@@ -131,6 +133,7 @@ def main(args):
     for epoch in range(args.nepochs):      
         optimizer.zero_grad()    
         ## 1=========================================
+        '''
         U1=net_inner(input_in)
         U_1x,U_1y=gradient(U1,x_in,y_in,device)  
         U_1xx=grad(U_1x,x_in,device)
@@ -141,8 +144,10 @@ def main(args):
         ff1_dx=grad(U_1xx+U_1yy,x_in,device)
         ff1_dy=grad(U_1xx+U_1yy,y_in,device)
         lipsch_omega1=torch.max(torch.cat((ff1_dx**2,ff1_dy**2),dim=0)) 
-        del ff1_dx,ff1_dy       
+        del ff1_dx,ff1_dy      
+        '''
         ## 2=========================================
+        '''
         U1_b=net_inner(input_in_b)
         U2_b_in=net_out(input_in_b)     
         interface_dirichlet=U2_b_in-U1_b-interface_dirich(input_in_b,args.a)    
@@ -162,8 +167,10 @@ def main(args):
   
         lipsch_interface_dirich=torch.max(max_d)
         del max_d, d_theta1, d_theta2, d_theta3,inter_dtheta1,inter_dtheta2,interface_dirichlet
+        '''
 
         ##3=========================================
+        '''
         dU1_N=torch.autograd.grad(U1_b,input_in_b, grad_outputs=z, create_graph=True)[0]     
         dU2_N=torch.autograd.grad(U2_b_in,input_in_b, grad_outputs=z, create_graph=True)[0]   
         interface_neumma=((args.a*dU2_N-dU1_N)*f_direction).sum(dim=1).view(-1,1) #  interface numman: 0 order      
@@ -177,6 +184,7 @@ def main(args):
 
         lipsch_interface_numman=torch.max(max_n)
         del max_n, inter_ntheta1, inter_ntheta2,interface_neumma,dU1_N,dU2_N
+        '''
 
         #4=========================================
         U2 =net_out(input_out) 
@@ -212,8 +220,8 @@ def main(args):
         lipsch_boundary=torch.max(max_b)
         del max_b,b_theta3,b_theta1,b_theta2,outb_theta2,outb_theta1
 
-        PINN_loss= loss_in + loss_out + (bound_loss0 + bound_loss1 +  bound_loss2)+ (loss_out_bn0 + loss_out_bn1) +(loss_out_bd0+loss_out_bd1+ loss_out_bd2)
-        PINN_loss+=(lipsch_omega1+lipsch_omega2)/args.train_domian+(lipsch_boundary+lipsch_interface_numman+lipsch_interface_dirich)/args.train_domian**(1/2)/args.train_inner_b     
+        PINN_loss=  loss_out + (loss_out_bd0+loss_out_bd1+ loss_out_bd2)
+        PINN_loss+=(lipsch_omega2)/args.train_domian+(lipsch_boundary)/args.train_domian**(1/2)
         PINN_loss.backward(retain_graph=True)
         optimizer.step()
                 
@@ -223,22 +231,22 @@ def main(args):
             
             #test_out,label_out,test_inner,label_inner
         
-            lipschitz_loss=lipsch_omega1+lipsch_omega2+lipsch_boundary+lipsch_interface_numman+lipsch_interface_dirich 
+            lipschitz_loss=lipsch_omega2+lipsch_boundary
             print('Epoch                         : ',epoch+1)   
             print('Training MSE, Lipschitz_loss  :',PINN_loss.item(),lipschitz_loss)                        
                 
-            L_in=net_inner(test_inner)-label_inner
+            #L_in=net_inner(test_inner)-label_inner
             L_out=net_out(test_out)-label_out
             # L_2 error calculate
-            L2_in=torch.sqrt(torch.nn.MSELoss()(L_in,L_in*0))
+            #L2_in=torch.sqrt(torch.nn.MSELoss()(L_in,L_in*0))
             L2_out=torch.sqrt(torch.nn.MSELoss()(L_out,L_out*0))
             # H_2 error calculate
-            dx_i=grad(L_in,tx_in,device)
-            dy_i=grad(L_in,ty_in,device)
-            dxx_i=grad(dx_i,tx_in,device)
-            dyy_i=grad(dy_i,ty_in,device)
-            dxy_i=grad(dy_i,tx_in,device)
-            H2_in=torch.sqrt(torch.mean(L_in**2+dx_i**2+dy_i**2+dxx_i**2+dyy_i**2+2*dxy_i**2))
+            #dx_i=grad(L_in,tx_in,device)
+            #dy_i=grad(L_in,ty_in,device)
+            #dxx_i=grad(dx_i,tx_in,device)
+            #dyy_i=grad(dy_i,ty_in,device)
+            #dxy_i=grad(dy_i,tx_in,device)
+            #H2_in=torch.sqrt(torch.mean(L_in**2+dx_i**2+dy_i**2+dxx_i**2+dyy_i**2+2*dxy_i**2))
 
             dx_o=grad(L_out,tx_out,device)
             dy_o=grad(L_out,ty_out,device)
@@ -247,9 +255,9 @@ def main(args):
             dxy_o=grad(dy_o,tx_out,device)
             H2_out=torch.sqrt(torch.mean(L_out**2+dx_o**2+dy_o**2+dxx_o**2+dyy_o**2+2*dxy_o**2))
 
-            print('Test numbers                  :',test_inner.size(),test_out.size())
-            print('Test L2                       :',L2_in.item(),',',L2_out.item())
-            print('Test H2                       :',H2_in.item(),',',H2_out.item())                      
+            print('Test numbers                  :',test_out.size())
+            print('Test L2                       :',L2_out.item())
+            print('Test H2                       :',H2_out.item())                      
             print('*****************************************************')  
 
     if not os.path.isdir('./outputs/'+args.filename+'/model'): os.makedirs('./outputs/'+args.filename+'/model')
