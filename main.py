@@ -239,7 +239,7 @@ if __name__ == '__main__':
     parser.add_argument('--nepochs', type=int, default=50)
     parser.add_argument('--lr', type=float, default=0.001) 
     parser.add_argument('--cuda', type=str, default=True)
-    # parser.add_argument('--r0', type=float, default=1)
+    parser.add_argument('--r0', type=float, default=1)
     parser.add_argument('--a', type=float, default=2)
     parser.add_argument('--L', type=list, default=[1,1])
     parser.add_argument('--box', type=list, default=2)
