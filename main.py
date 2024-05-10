@@ -51,19 +51,20 @@ def test_data_net(args,device):
     input_x=torch.tensor(xx).view(-1,1).to(device)
     input_y=torch.tensor(yy).view(-1,1).to(device)
     input=(torch.cat((input_x,input_y),1)).float()
-    index_inner=torch.where(torch.norm(input-L1,dim=1)<args.r0)[0]
-    inner=input[index_inner,:]
+    #index_inner=torch.where(torch.norm(input-L1,dim=1)<args.r0)[0]
+    #inner=input[index_inner,:]
 
-    index_out1=torch.where(torch.norm(input-L1,dim=1)>=args.r0)[0]
-    out=input[index_out1,:]
-    index_out=torch.where(torch.norm(out-L1,dim=1)<=args.box)[0] # a ringing
-    out=out[index_out,:]
+    index_out=torch.where(torch.norm(input-L1,dim=1)<=args.box)[0]
+    #out=input[index_out1,:]
+    #index_out=torch.where(torch.norm(out-L1,dim=1)<=args.box)[0] # a ringing
+    out=input[index_out,:]
     
-    test_inner=inner.float().to(device).clone().detach()
+    #test_inner=inner.float().to(device).clone().detach()
     test_out=out.float().to(device).clone().detach()
     
-    print('Totle test number of data:',test_inner.size()[0],test_out.size()[0])  
-    return test_out,test_inner
+    #print('Totle test number of data:',test_inner.size()[0],test_out.size()[0])
+    print('Totle test number of data:',test_out.size()[0])
+    return test_out
 
 
 def main(args):
@@ -258,7 +259,7 @@ def main(args):
         
 if __name__ == '__main__':
     torch.cuda.set_device(0)
-    number=100
+    number=40
     parser = argparse.ArgumentParser()
     parser.add_argument('--filename',type=str, default='results')
     parser.add_argument('--train_inner_b', type=int, default=10*int(np.sqrt(number)))
@@ -266,8 +267,8 @@ if __name__ == '__main__':
     parser.add_argument('--train_out_b', type=int, default=10*int(np.sqrt(number)))
     parser.add_argument('--inner_unit', type=int, default=200)
     parser.add_argument('--out_unit', type=int, default=200)
-    parser.add_argument('--print_num', type=int, default=100)
-    parser.add_argument('--nepochs', type=int, default=200)
+    parser.add_argument('--print_num', type=int, default=2)
+    parser.add_argument('--nepochs', type=int, default=1000)
     parser.add_argument('--lr', type=float, default=0.001) 
     parser.add_argument('--cuda', type=str, default=True)
     parser.add_argument('--r0', type=float, default=1)
