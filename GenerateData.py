@@ -39,7 +39,7 @@ class Data_Single(object):
        
         return X
 
-
+'''
     def sampleDomain_hole(self,num):
         """
         num: the number of training points
@@ -47,14 +47,14 @@ class Data_Single(object):
         L=self.L
         X=self.sampleFromDomain(num)      
         y=torch.norm(X-L,dim=1)     
-        location=torch.where(y>self.r0)[0]
+        location=torch.where(y<self.r1)[0]
         X_out=X[location,:]      
         
-        location=torch.where(y<self.r0)[0]
-        X_in=X[location,:]      
+        #location=torch.where(y<self.r0)[0]
+        #X_in=X[location,:]      
 
-        return X_out,X_in
-'''
+        return X_out
+
 
     def sampleFromDomain(self,num):
         xmin,xmax,ymin,ymax=-self.r1,self.r1,-self.r1,self.r1
