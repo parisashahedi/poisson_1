@@ -11,7 +11,7 @@ class Data_Single(object):
         self.L=torch.tensor(L).to(device)
         self.r1=box
         self.device=device
-
+'''
     def sphere_bound(self,num):
         """
         L : the center of sphere
@@ -26,7 +26,7 @@ class Data_Single(object):
         f_direction=(X-self.L)/self.r0
         
         return psi.to(self.device),f_direction.to(self.device)
-    
+   
 
     def sphere_inner(self,num):
 
@@ -54,7 +54,7 @@ class Data_Single(object):
         X_in=X[location,:]      
 
         return X_out,X_in
-
+'''
 
     def sampleFromDomain(self,num):
         xmin,xmax,ymin,ymax=-self.r1,self.r1,-self.r1,self.r1
