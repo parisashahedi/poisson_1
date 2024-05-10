@@ -133,58 +133,17 @@ def main(args):
     for epoch in range(args.nepochs):      
         optimizer.zero_grad()    
         ## 1=========================================
-        '''
-        U1=net_inner(input_in)
-        U_1x,U_1y=gradient(U1,x_in,y_in,device)  
-        U_1xx=grad(U_1x,x_in,device)
-        U_1yy=grad(U_1y,y_in,device)
-        ff1=-(U_1xx+U_1yy)-f_grad(input_in,'inner',args.a)
-        loss_in=torch.mean((ff1)**2)
+        
 
-        ff1_dx=grad(U_1xx+U_1yy,x_in,device)
-        ff1_dy=grad(U_1xx+U_1yy,y_in,device)
-        lipsch_omega1=torch.max(torch.cat((ff1_dx**2,ff1_dy**2),dim=0)) 
-        del ff1_dx,ff1_dy      
-        '''
+        
         ## 2=========================================
-        '''
-        U1_b=net_inner(input_in_b)
-        U2_b_in=net_out(input_in_b)     
-        interface_dirichlet=U2_b_in-U1_b-interface_dirich(input_in_b,args.a)    
-        bound_loss0=torch.mean((interface_dirichlet)**2) # interface dirichilet: 0 order
-        ##
-        inter_dtheta1=grad(interface_dirichlet, inner_b_theta,device)
-        bound_loss1=torch.mean((inter_dtheta1)**2) #  interface dirichilet: 1 order
-        d_theta1=grad(U2_b_in-U1_b, inner_b_theta,device)
-        inter_dtheta2=grad(inter_dtheta1, inner_b_theta,device)
-        bound_loss2=torch.mean((inter_dtheta2)**2) #  interface dirichilet: 2 order
+        
 
-        d_theta2=grad(d_theta1, inner_b_theta,device)
-        max_d=torch.cat((d_theta1**2,d_theta2**2),dim=0)
- 
-        d_theta3=grad(d_theta2, inner_b_theta,device)
-        max_d=torch.cat((max_d,d_theta3**2),dim=0)
-  
-        lipsch_interface_dirich=torch.max(max_d)
-        del max_d, d_theta1, d_theta2, d_theta3,inter_dtheta1,inter_dtheta2,interface_dirichlet
-        '''
-
+        
         ##3=========================================
-        '''
-        dU1_N=torch.autograd.grad(U1_b,input_in_b, grad_outputs=z, create_graph=True)[0]     
-        dU2_N=torch.autograd.grad(U2_b_in,input_in_b, grad_outputs=z, create_graph=True)[0]   
-        interface_neumma=((args.a*dU2_N-dU1_N)*f_direction).sum(dim=1).view(-1,1) #  interface numman: 0 order      
-        loss_out_bn0=torch.mean((interface_neumma)**2)  
+        
 
-        inter_ntheta1=grad(interface_neumma,inner_b_theta,device)
-        loss_out_bn1=torch.mean(inter_ntheta1**2)  # interface numman: 1 order
-
-        inter_ntheta2=grad(inter_ntheta1,inner_b_theta,device)
-        max_n=torch.cat((inter_ntheta1**2,inter_ntheta2**2),dim=0)
-
-        lipsch_interface_numman=torch.max(max_n)
-        del max_n, inter_ntheta1, inter_ntheta2,interface_neumma,dU1_N,dU2_N
-        '''
+        
 
         #4=========================================
         U2 =net_out(input_out) 
@@ -194,34 +153,35 @@ def main(args):
         ff2=-(U_2xx+U_2yy)*args.a-f_grad(input_out,'out',args.a)
         loss_out=torch.mean((ff2)**2)
 
-        ff2_dx=grad((U_2xx+U_2yy),x_out,device)
-        ff2_dy=grad((U_2xx+U_2yy),y_out,device)
+        ## ff2_dx=grad((U_2xx+U_2yy),x_out,device)
+        ## ff2_dy=grad((U_2xx+U_2yy),y_out,device)
 
-        lipsch_omega2=torch.max(torch.cat((ff2_dx**2,ff2_dy**2),dim=0))
-        del ff2_dx,ff2_dy
+        ## lipsch_omega2=torch.max(torch.cat((ff2_dx**2,ff2_dy**2),dim=0))
+        ## del ff2_dx,ff2_dy
         ##5=========================================
         ob=net_out(out_b)
         boundary=ob-out_b_label
         loss_out_bd0=torch.mean((boundary)**2)
 
-        outb_theta1=grad(boundary,out_b_theta,device)
-        loss_out_bd1=torch.mean(outb_theta1**2)
-        b_theta1=grad(ob,out_b_theta,device)     
+        ## outb_theta1=grad(boundary,out_b_theta,device)
+        ## loss_out_bd1=torch.mean(outb_theta1**2)
+        ## b_theta1=grad(ob,out_b_theta,device)     
 
-        outb_theta2=grad(outb_theta1,out_b_theta,device)
-        loss_out_bd2=torch.mean(outb_theta2**2)
+        ## outb_theta2=grad(outb_theta1,out_b_theta,device)
+        ## loss_out_bd2=torch.mean(outb_theta2**2)
      
-        b_theta2=grad(b_theta1,out_b_theta,device)   
-        max_b=torch.cat((b_theta1**2,b_theta2**2),dim=0)
+        ## b_theta2=grad(b_theta1,out_b_theta,device)   
+        ## max_b=torch.cat((b_theta1**2,b_theta2**2),dim=0)
    
-        b_theta3=grad(b_theta2,out_b_theta,device)   
-        max_b=torch.cat((max_b,b_theta3**2),dim=0)
+        ## b_theta3=grad(b_theta2,out_b_theta,device)   
+        ## max_b=torch.cat((max_b,b_theta3**2),dim=0)
 
-        lipsch_boundary=torch.max(max_b)
-        del max_b,b_theta3,b_theta1,b_theta2,outb_theta2,outb_theta1
+        ## lipsch_boundary=torch.max(max_b)
+        ## del max_b,b_theta3,b_theta1,b_theta2,outb_theta2,outb_theta1
+        PINN_loss=  loss_out + loss_out_bd0
 
-        PINN_loss=  loss_out + (loss_out_bd0+loss_out_bd1+ loss_out_bd2)
-        PINN_loss+=(lipsch_omega2)/args.train_domian+(lipsch_boundary)/args.train_domian**(1/2)
+        ## PINN_loss=  loss_out + (loss_out_bd0+loss_out_bd1+ loss_out_bd2)
+        ## PINN_loss+=(lipsch_omega2)/args.train_domian+(lipsch_boundary)/args.train_domian**(1/2)
         PINN_loss.backward(retain_graph=True)
         optimizer.step()
                 
@@ -231,11 +191,12 @@ def main(args):
             
             #test_out,label_out,test_inner,label_inner
         
-            lipschitz_loss=lipsch_omega2+lipsch_boundary
+            ## lipschitz_loss=lipsch_omega2+lipsch_boundary
             print('Epoch                         : ',epoch+1)   
-            print('Training MSE, Lipschitz_loss  :',PINN_loss.item(),lipschitz_loss)                        
+            print('Training MSE :',PINN_loss.item())
+            ## print('Training MSE, Lipschitz_loss  :',PINN_loss.item(),lipschitz_loss)                        
                 
-            #L_in=net_inner(test_inner)-label_inner
+            ## L_in=net_inner(test_inner)-label_inner
             L_out=net_out(test_out)-label_out
             # L_2 error calculate
             #L2_in=torch.sqrt(torch.nn.MSELoss()(L_in,L_in*0))
@@ -261,25 +222,24 @@ def main(args):
             print('*****************************************************')  
 
     if not os.path.isdir('./outputs/'+args.filename+'/model'): os.makedirs('./outputs/'+args.filename+'/model')
-    torch.save(net_inner, 'outputs/'+args.filename+'/model/inner.pkl')
     torch.save(net_out, 'outputs/'+args.filename+'/model/out.pkl')
     print('training_down!')
         
 if __name__ == '__main__':
     torch.cuda.set_device(0)
-    number=40
+    number=100
     parser = argparse.ArgumentParser()
     parser.add_argument('--filename',type=str, default='results')
-    parser.add_argument('--train_inner_b', type=int, default=10*int(np.sqrt(number)))
+    # parser.add_argument('--train_inner_b', type=int, default=10*int(np.sqrt(number)))
     parser.add_argument('--train_domian', type=int, default=number)
     parser.add_argument('--train_out_b', type=int, default=10*int(np.sqrt(number)))
-    parser.add_argument('--inner_unit', type=int, default=200)
+    # parser.add_argument('--inner_unit', type=int, default=200)
     parser.add_argument('--out_unit', type=int, default=200)
     parser.add_argument('--print_num', type=int, default=2)
-    parser.add_argument('--nepochs', type=int, default=1000)
+    parser.add_argument('--nepochs', type=int, default=50)
     parser.add_argument('--lr', type=float, default=0.001) 
     parser.add_argument('--cuda', type=str, default=True)
-    parser.add_argument('--r0', type=float, default=1)
+    # parser.add_argument('--r0', type=float, default=1)
     parser.add_argument('--a', type=float, default=2)
     parser.add_argument('--L', type=list, default=[1,1])
     parser.add_argument('--box', type=list, default=2)
