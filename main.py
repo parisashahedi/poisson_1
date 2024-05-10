@@ -113,7 +113,7 @@ def main(args):
     
     #net_inner=FNN(m=args.inner_unit).to(device) 
     net_out=FNN(m=args.out_unit).to(device)     
-    optimizer=optim.Adam(itertools.chain(net_inner.parameters(),net_out.parameters()),lr=args.lr)
+    optimizer=optim.Adam(itertools.chain(net_out.parameters()),lr=args.lr)
     result=[]
     t0=time.time()
     task={}
